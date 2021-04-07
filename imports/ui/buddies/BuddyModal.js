@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Modal from 'react-modal';
-import { buddies } from '../../api/buddies/buddies';
 
 export const BuddyModal = ({isOpen, setOpen}) => {
 

@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
-import { buddies } from '../imports/api/buddies/buddies';
 import '../imports/api/buddies/methods';
 import '../imports/api/buddies/publications';
 import '../imports/api/users/methods';
