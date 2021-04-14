@@ -1,4 +1,5 @@
 import React, { Fragment, useState } from 'react';
+import { useTracker } from 'meteor/react-meteor-data';
 import { TopBar } from '../components/TopBar';
 import { BuddyItem } from '../buddies/BuddyItem';
 import { BuddiesList } from '../buddies/BuddiesList';
@@ -46,6 +47,18 @@ export const MainLayout = () => {
         isAway: false
     })
 
+    const { allBuddies, managers } = useTracker(() => {
+        const handler = Meteor.subscribe('buddies');
+
+        //regular expresion for searching names.
+        let re = new RegExp(`${buddySearch}[A-z]*`);
+
+        return {
+            allBuddies: buddies.find(buddySearch ? {name: re} : {}).fetch(),
+            managers: buddies.find({manager: true}).fetch()
+        };
+    })
+
     const openProfileModal = () => {
         setProfileModalIsOpen(true);
     }
@@ -55,6 +68,7 @@ export const MainLayout = () => {
     }
 
     const openEditModal = (id, name, manager, isAway) => {
+
         setEditModalIsOpen(true);
         setEditModalStatus({id: id, name: name, manager: manager, isAway: isAway});
     }
@@ -71,7 +85,7 @@ export const MainLayout = () => {
             <Grid>
                 <LeftLayout>
                     <input className="buddy-search" type="text" value={buddySearch} onChange={(e) => SetbuddySearch(e.target.value)}/>
-                    <BuddiesList openEditModal={openEditModal} filter={buddySearch}/>
+                    <BuddiesList openEditModal={openEditModal} allBuddies={allBuddies}/>
                 </LeftLayout>
 
                 <RightLayout>
@@ -80,8 +94,8 @@ export const MainLayout = () => {
                 </RightLayout>
 
                 <ProfileModal isOpen={profileModalIsOpen} setOpen={setProfileModalIsOpen}/>
-                <BuddyModal isOpen={buddyModalIsOpen} setOpen={setBuddyModalIsOpen}/>
-                <EditModal isOpen={editModalIsOpen} setOpen={setEditModalIsOpen} BuddyStatus={editModalStatus}/>
+                <BuddyModal isOpen={buddyModalIsOpen} setOpen={setBuddyModalIsOpen} managers={managers}/>
+                <EditModal isOpen={editModalIsOpen} setOpen={setEditModalIsOpen} BuddyStatus={editModalStatus} managers={managers}/>
 
             </Grid>
         </Fragment>

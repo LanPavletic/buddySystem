@@ -6,8 +6,12 @@ export const BuddyItem = ({buddy, openEditModal}) => {
     const remove = () => {
         Meteor.call('buddies.remove', id);
     }
+
+    //seting the buddies values into te edit modal.
     const name = buddy.name;
-    const manager = buddy.manager;
+    // if buddy is manager set manager to true otherwise
+    // set to object so Select component can display it right.
+    const manager = typeof buddy.manager === "object" ? {label: buddy.manager.name, value: buddy.manager} : true;
     const id = buddy._id;
     const isAway = buddy.isAway
 

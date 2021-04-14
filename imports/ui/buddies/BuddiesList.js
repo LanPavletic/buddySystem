@@ -5,18 +5,7 @@ import { buddies } from '../../api/buddies/buddies';
 
 
 
-export const BuddiesList = ({ openEditModal, filter }) => {
-
-    const { allBuddies } = useTracker(() => {
-        const handler = Meteor.subscribe('buddies');
-
-        //regular expresion for searching names.
-        let re = new RegExp(`${filter}[A-z]*`);
-
-        return {
-            allBuddies: buddies.find(filter ? {name: re} : {}).fetch()
-        };
-    })
+export const BuddiesList = ({ openEditModal, allBuddies }) => {
 
     return (
         <div>
