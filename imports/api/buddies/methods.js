@@ -1,20 +1,47 @@
 import { buddies } from './buddies';
 
+
+// return persons id and name if more than one or noone returns false
+const getPersonObj = (name) => {
+    const buddy = buddies.find({name: name}).fetch();
+
+    if (buddy.length > 1) {
+        console.log(`more than one person with name: ${name} was found.`)
+        return false;
+    }
+    if (!buddy.length) {
+        console.log(`noone with the name: ${name} was found.`)
+        return false
+    }
+    return {_id: buddy[0]._id, name: buddy[0].name};
+}
+
+const getManagerBuddies = (name) => {
+    const managerBuddies = buddies.find({manager: getPersonObj(name)}).fetch();
+    const arr = new Array()
+    managerBuddies.forEach((buddy) => arr.push({_id: buddy._id, name: buddy.name}));
+    return arr
+}
+
+const getCandidates = (unavaiableCandidates, allCandidates) => {
+    return allCandidates.filter((buddy) => !unavaiableCandidates.some((person) => person._id === buddy._id));
+}
+
 Meteor.methods({
     'buddies.upsert'(name, manager, isAway, id=false) {
         //updating buddy when id is given.
         if (id) {
             const update = { $set: { name: name, manager: manager, isAway: isAway } };
             buddies.update(id, update);
-            console.log(`updating buddies collection (name: ${name}, manager: ${manager}).`);
+            console.log(`updating buddies collection (name: ${name}, manager: ${manager.name}).`);
         } else {
             buddies.insert({
                 name: name,
                 manager: manager, // OBJ {id, name}
-                prevPairs: [], // OBJ {id, name}
+                prevPairs: [], // OBJ {id, name, (Date=Date of match)}
                 isAway: isAway
             });
-            console.log(`inserting into buddies collection (name: ${name}, manager: ${manager}).`);
+            console.log(`inserting into buddies collection (name: ${name}, manager: ${manager.name}).`);
         }
     },
 
@@ -26,57 +53,73 @@ Meteor.methods({
     },
 
     'buddies.pair'() {
+        console.log("called buddies.pair")
         //TODO
-        const allBuddies = buddies.find({}).fetch();
-        const unPaired = [];
+        // const update = {$push: {prevPairs: getPersonObj("JP")}}
+        // buddies.update("7SCH5pmWjFSfJmbW7", update);
 
-        //making a list of all employees that need pairing (all in this case).
+        const allBuddies = buddies.find({isAway: {$ne: true}}).fetch();
+        // const awayBuddies = buddies.find({isAway: true}).fetch()
+
         for (let buddy of allBuddies) {
-            unPaired.push(buddy._id);
-            buddies.update(buddy._id, {$set: {pair: ""}});
+            let unavaiableCandidates = new Array(buddy.manager !== true ? buddy.manager : 0); // array of people the person cannot match with (manager, previus pairs...).
+            buddy.prevPairs.forEach((buddy) => unavaiableCandidates.push(getPersonObj(buddy.name)));
+            unavaiableCandidates.push(getPersonObj(buddy.name));
+            if (buddy.manager === true) {
+                getManagerBuddies(buddy.name).forEach((buddy) => unavaiableCandidates.push(buddy));
+            }
+            const a = new Array();
+            allBuddies.forEach((buddy) => a.push(getPersonObj(buddy.name)))
+            buddy.candidates = getCandidates(unavaiableCandidates, a);
         }
 
+        // sorting by the number of candidates
+        allBuddies.sort((a, b) => a.candidates.length - b.candidates.length);
+        let alreadyPicked = [] // PersonObj of people who have been picked
         for (let buddy of allBuddies) {
+            if (alreadyPicked.some((person) => person._id === buddy._id)) {
+                continue;
+            }
+            const candidates = getCandidates(alreadyPicked, buddy.candidates);
 
-            // skip buddy if already paired.
-            if (!unPaired.includes(buddy._id)) {
+            if (allBuddies.length - alreadyPicked.length === 3) {
+
+                //TODO
+
+
+                console.log("create a trio");
+
                 break;
             }
-            //copy of unPaired array
-            let candidates = [...unPaired];
 
-            // putting manager into array of unavailablePairs if the employee has one.
-            if (!buddy.unavailablePairs.length && buddy.manager) {
-                // adding manager.
-                buddy.unavailablePairs.push(buddies.findOne({name: buddy.manager})._id);
+            if (!candidates.length) {
 
-            }
-            if (!buddy.unavailablePairs && !buddy.manager) {
-                for (let person of allBuddies) {
-                    if (person.manager == buddy.name) {
-                        buddy.unavailablePairs.push(person._id);
-                    }
-                }
+                // TODO
+
+                console.log("exception will occur.")
+                console.log(buddy.name);
+                console.log(buddy.candidates);
+                console.log(alreadyPicked);
+                break;
             }
 
-            buddy.unavailablePairs.push(buddy._id);
-            buddies.update(buddy._id, buddy);
+            const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+            buddy.pair = chosen;
+            const buddyPair = allBuddies.find((buddy) => buddy.name === chosen.name);
+            buddyPair.pair = getPersonObj(buddy.name);
 
 
-            //removing all unavaiablePairs from candidates.
-            for (let unavailablePair of buddy.unavailablePairs) {
-                if (candidates.includes(unavailablePair)) {
-                    candidates.splice(candidates.indexOf(unavailablePair), 1);
-                }
-            }
+            alreadyPicked.push(buddy)
+            alreadyPicked.push(buddyPair)
 
-            const pick = candidates[Math.floor(Math.random() * candidates.length)];
-            buddy.pair = buddies.findOne({_id: pick}).name;
-            unPaired.splice(unPaired.indexOf(pick), 1);
-            unPaired.splice(unPaired.indexOf(buddy._id), 1);
-            console.log(unPaired);
-            buddies.update(buddy._id, buddy);
-            buddies.update(pick, {$set: {pair: buddy.name}});
+            buddy.prevPairs.push(getPersonObj(buddyPair.name));
+            buddyPair.prevPairs.push(getPersonObj(buddy.name));
+
+        }
+
+        for (let buddy of allBuddies) {
+            const update = {$set: {pair: buddy.pair}};
+            buddies.update(buddy._id, update);
         }
     }
-})
+});

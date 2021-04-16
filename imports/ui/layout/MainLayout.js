@@ -90,7 +90,7 @@ export const MainLayout = () => {
 
                 <RightLayout>
                     <input className="pair-search" type="text"/>
-                    <BuddiesPairList />
+                    <BuddiesPairList allBuddies={allBuddies}/>
                 </RightLayout>
 
                 <ProfileModal isOpen={profileModalIsOpen} setOpen={setProfileModalIsOpen}/>

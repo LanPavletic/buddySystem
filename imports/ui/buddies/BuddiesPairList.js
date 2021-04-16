@@ -1,140 +1,23 @@
 import React from 'react';
 import { BuddiesPair } from './BuddeisPair';
 
-export const BuddiesPairList = () => {
-
-    const pairs = [
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
+export const BuddiesPairList = (allBuddies) => {
+    const pairs = new Array();
+    const getPairs = () => {
+        const toSkip = new Array();
+        for (let buddy of allBuddies.allBuddies) {
+            if (toSkip.includes(buddy.name)) {
+                continue;
             }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
-        },
-        {
-            first: {
-                name: "Lan",
-                surname: "Pavletič"
-            },
-            second: {
-                name: "Jože",
-                surname: "Neki"
-            }
+            pairs.push({first: buddy.name, second: buddy.pair.name});
+            toSkip.push(buddy.pair.name);
         }
-    ]
+        return pairs;
+    }
+    if (allBuddies.allBuddies.length > 0){
+        getPairs();
+        console.log(pairs);
+    }
 
     return (
         <div>
